@@ -1,7 +1,9 @@
 # simple-db-layer
-simple DB layer to connect to mysql, oracle and posgress
+simple PHP DB layer for mysql, oracle and posgress
 
--- include --
+Installation
+
+Features
 
 -- cache --
 

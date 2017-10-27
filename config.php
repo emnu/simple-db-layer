@@ -8,7 +8,7 @@ class DATABASE_CONFIG {
 		'database' => 'yourip:port/databasename'
 	);
 
-	public $db001 = array( // KL Live
+	public $db001 = array(
 		'type'     => 'mysql',
 		'username' => 'root',
 		'password' => '',

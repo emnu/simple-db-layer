@@ -1,5 +1,5 @@
 # simple-db-layer
-simple PHP DB layer for mysql, oracle and posgress
+simple PHP DB layer for mysql, oracle and postgres
 
 Installation
 

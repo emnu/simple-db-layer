@@ -331,8 +331,10 @@ class Mysql {
 		$result->query = 'DELETE FROM '.$modelVars['table'];
 
 		if(!empty($conditions)) {
-			$condStr = $this->buildConditions($conditions, $result->bindArr);
+			$sql = array();
+			$condStr = $this->buildConditions($conditions, $sql);
 			$result->query .= ' WHERE ' . $condStr;
+			$result->bindArr = array_merge(array($sql['types']), $sql['values']);
 		}
 		$result->execute($this->_conn);
 		return $result;

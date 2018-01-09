@@ -20,7 +20,7 @@ class Mysql {
 			12 => 'datetime',
 			13 => 'year',
 			16 => 'bit',
-			252 => 'blob',
+			252 => 'text',
 			253 => 'varchar',
 			254 => 'char',
 			246 => 'decimal'
@@ -40,7 +40,7 @@ class Mysql {
 			'datetime' => 's',
 			'year' => 'i',
 			'bit' => 'b',
-			'blob' => 'b',
+			'text' => 's',
 			'varchar' => 's',
 			'char' => 's',
 			'decimal' => 'd'
@@ -387,11 +387,14 @@ class MysqlResultSet {
 		}
 		if(preg_match("/^select[\s]+/i", $this->query)) {
 			$this->statement->store_result();
+			$this->numRows = $this->statement->num_rows;
+		}
+		else {
+			$this->numRows = $this->statement->affected_rows;
 		}
 		if(isset($this->primaryKey) && !empty($this->primaryKey) && preg_match("/^insert[\s]+into[\s]+/i", $this->query)) {
 			$this->id = $this->statement->insert_id;
 		}
-		$this->numRows = $this->statement->num_rows;
 		if(!empty($fields)) {
 			foreach ($fields as $key => $value) {
 				$this->fields[$key] = &$fields[$key];
@@ -416,7 +419,12 @@ class MysqlResultSet {
 		else {
 			die($conn->error);
 		}
-		$this->numRows = $this->statement->num_rows;
+		if(preg_match("/^select[\s]+/i", $this->query)) {
+			$this->numRows = $this->statement->affected_rows;
+		}
+		else {
+			$this->numRows = $this->statement->num_rows;
+		}
 	}
 
 	public function getArray() {

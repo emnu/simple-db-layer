@@ -4,15 +4,22 @@ class Oracle {
 
 	protected $_conn = null;
 
-	protected $_config = array();
+	protected $_config = array(
+		'type'     => 'oracle',
+		'username' => 'root',
+		'password' => '',
+		'host' => 'localhost',
+		'port' => 1521,
+		'database' => ''
+	);
 
 	public function __construct($config) {
-		$this->_config = $config;
+		$this->_config = array_merge($this->_config, $config);
 		$this->connect();
 	}
 
 	public function connect() {
-		$this->_conn = oci_connect($this->_config['username'], $this->_config['password'], $this->_config['database']);
+		$this->_conn = oci_connect($this->_config['username'], $this->_config['password'], $this->_config['host'].':'.$this->_config['port'].'/'.$this->_config['database']);
 	}
 
 	public function check() {

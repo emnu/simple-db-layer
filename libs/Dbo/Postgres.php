@@ -4,10 +4,17 @@ class Postgres {
 
 	protected $_conn = null;
 
-	protected $_config = array();
+	protected $_config = array(
+		'type'     => 'postgres',
+		'username' => 'root',
+		'password' => '',
+		'host'     => 'localhost',
+		'port'     => 5432,
+		'database' => ''
+	);
 
 	public function __construct($config) {
-		$this->_config = $config;
+		$this->_config = array_merge($this->_config, $config);
 		$this->connect();
 	}
 

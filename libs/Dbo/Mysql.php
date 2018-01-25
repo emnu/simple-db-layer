@@ -4,7 +4,14 @@ class Mysql {
 
 	protected $_conn = null;
 
-	protected $_config = array();
+	protected $_config = array(
+		'type'     => 'mysql',
+		'username' => 'root',
+		'password' => '',
+		'host' => 'localhost',
+		'port' => 3306,
+		'database' => ''
+	);
 
 	protected $_fieldType = array(
 			1 => 'tinyint',
@@ -55,12 +62,12 @@ class Mysql {
 		);
 
 	public function __construct($config) {
-		$this->_config = $config;
+		$this->_config = array_merge($this->_config, $config);
 		$this->connect();
 	}
 
 	public function connect() {
-		$this->_conn = new mysqli($this->_config['host'], $this->_config['username'], $this->_config['password'], $this->_config['database']);
+		$this->_conn = new mysqli($this->_config['host'], $this->_config['username'], $this->_config['password'], $this->_config['database'], $this->_config['port']);
 	}
 
 	public function check() {

@@ -21,7 +21,7 @@ include_once(LIB_PATH . 'Cache.php');
 
 include_once(LIB_PATH . 'Model.php');
 
-if(in_array('--dry-run', $argv)) {
+if(isset($argv) && in_array('--dry-run', $argv)) {
 	CONFIG::$dryRun = true;
 }
 

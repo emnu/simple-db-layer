@@ -5,7 +5,8 @@ class DATABASE_CONFIG {
 		'type'     => 'oracle',
 		'username' => 'root',
 		'password' => '',
-		'database' => 'yourip:port/databasename'
+		'host'     => 'localhost',
+		'database' => 'databasename'
 	);
 
 	public $db001 = array(

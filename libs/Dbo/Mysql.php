@@ -427,10 +427,10 @@ class MysqlResultSet {
 			die($conn->error);
 		}
 		if(preg_match("/^select[\s]+/i", $this->query)) {
-			$this->numRows = $this->statement->affected_rows;
+			$this->numRows = $this->statement->num_rows;
 		}
 		else {
-			$this->numRows = $this->statement->num_rows;
+			$this->numRows = $this->statement->affected_rows;
 		}
 	}
 

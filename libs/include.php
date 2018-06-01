@@ -49,3 +49,24 @@ class ModelObj {
 	}
 }
 $Model = new ModelObj();
+
+class ViewObj {
+	static protected $helperDir = 'Helper';
+
+	static protected $helpers = array();
+
+	public function __get($name) {
+		if(isset(self::$helpers[$name])) {
+			return self::$helpers[$name];
+		}
+
+		$helperFile = LIB_PATH . self::$helperDir . DIRECTORY_SEPARATOR . $name . '.php';
+		if(!is_file($helperFile)) {
+			return null;
+		}
+		include_once($helperFile);
+		self::$helpers[$name] = new $name();
+		return self::$helpers[$name];
+	}
+}
+$View = new ViewObj();

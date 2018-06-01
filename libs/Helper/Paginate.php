@@ -24,6 +24,12 @@ class Paginate extends ModelObj {
 							'order'=>'order'
 						);
 
+	private $links = 5;
+
+	private $start = null;
+
+	private $end  = null;
+
 	public function addPrefix($name) {
 		foreach ($this->paramList as $key => $value) {
 			$this->paramList[$key] = $name.$value;
@@ -66,6 +72,9 @@ class Paginate extends ModelObj {
 		if(!empty($this->field)) {
 			$options['order'] = $this->field . ' ' . strtoupper($this->order);
 		}
+
+		$this->start = (($this->current - $this->links) > 0)?$this->current - $this->links:1;
+		$this->end = (($this->current + $this->links) < $this->pages)?$this->current + $this->links:$this->pages;
 
 		$options['page'] = $this->current;
 
@@ -127,7 +136,16 @@ class Paginate extends ModelObj {
 	}
 
 	public function numbers() {
+		$params = $this->params;
 
+		$params[$this->paramList['page']] = $this->start;
+
+		if($this->start > $this->end) {
+			return false;
+		}
+		$this->start++;
+
+		return array($params[$this->paramList['page']], $this->generateGet($params));
 	}
 
 	public function next() {
@@ -160,7 +178,7 @@ class Paginate extends ModelObj {
 
 		$tmp = array();
 		foreach ($params as $key => $value) {
-			$tmp[] = $key . '=' . $value;
+			$tmp[] = $key . '=' . urlencode($value);
 		}
 
 		return '?' . implode('&', $tmp);

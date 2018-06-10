@@ -273,7 +273,7 @@ class Mysql {
 			$partition = ' PARTITION ('.$options['partition'].')';
 		}
 
-		$result->query = 'SELECT COUNT(*) as CNT FROM `'.$modelVars['table'].'`'.$partition.' AS `'.$modelVars['name'].'`';
+		$result->query = 'SELECT COUNT(*) AS cnt FROM `'.$modelVars['table'].'`'.$partition.' AS `'.$modelVars['name'].'`';
 
 		if(isset($options['contain']) && !empty($options['contain'])) {
 			foreach ($options['contain'] as $key => $value) {

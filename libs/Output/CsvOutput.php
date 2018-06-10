@@ -1,6 +1,6 @@
 <?php
 
-class Csv {
+class CsvOutput {
 	protected $filename = null;
 
 	protected $header = array();

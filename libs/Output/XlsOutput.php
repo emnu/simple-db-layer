@@ -15,20 +15,55 @@ class XlsOutput {
 
 	protected $currRow = 1;
 
-	public function __construct($filename, $header = 'A1') {
+	protected $creator = 'PHPExcel Helper';
+
+	protected $modifiedBy = 'PHPExcel Helper';
+
+	protected $title = 'Excel Document';
+
+	protected $subject = '';
+
+	protected $descripton = '';
+
+	protected $keywords = '';
+
+	protected $category = '';
+
+	protected $defaultsKey = array(
+		'creator', 'modifiedBy', 'modifiedBy',
+		'title', 'subject', 'descripton',
+		'keywords', 'category'
+	);
+
+	public function __construct($filename, $header = 'A1', $options = array()) {
 		$this->filename = $filename;
+
+		$this->setOptions($options);
 
 		$this->headerStart = $header;
 
 		$this->xlsHandler = new PHPExcel();
 
-		$this->xlsHandler->getProperties()->setCreator("Maarten Balliauw")
-									 ->setLastModifiedBy("Maarten Balliauw")
-									 ->setTitle("Office 2007 XLSX Test Document")
-									 ->setSubject("Office 2007 XLSX Test Document")
-									 ->setDescription("Test document for Office 2007 XLSX, generated using PHP classes.")
-									 ->setKeywords("office 2007 openxml php")
-									 ->setCategory("Test result file");
+		$this->xlsHandler->getProperties()->setCreator($this->creator)
+									 ->setLastModifiedBy($this->modifiedBy)
+									 ->setTitle($this->title)
+									 ->setSubject($this->subject)
+									 ->setDescription($this->descripton)
+									 ->setKeywords($this->keywords)
+									 ->setCategory($this->category);
+	}
+
+	public function setOptions($options) {
+		foreach ($options as $key => $value) {
+			if(in_array($key, $this->defaultsKey)) {
+				if(is_array($this->{$key})) {
+					$this->{$key} = array_merge($this->{$key}, $value);
+				}
+				else {
+					$this->{$key} = $value;
+				}
+			}
+		}
 	}
 
 	public function setHeader($header = array()) {

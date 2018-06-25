@@ -11,11 +11,14 @@ class XlsInput {
 
 	protected $xlsHandler = null;
 
+	protected $properties = array();
+
 	public function __construct($filename, $header = array('A1', 'A1')) {
 		if(!class_exists('ZipArchive')) {
 			PHPExcel_Settings::setZipClass(PHPExcel_Settings::PCLZIP);
 		}
 
+		$this->filename = $filename;
 		$this->xlsHandler = PHPExcel_IOFactory::load($filename);
 
 		if($this->xlsHandler) {
@@ -40,6 +43,34 @@ class XlsInput {
 		$this->header[$colKey] = $this->xlsHandler->getActiveSheet()->getCell($from)->getValue();
 
 		$this->currRow = $fromMatch[0][2] + 1;
+	}
+
+	public function &getHandler() {
+		return $this->xlsHandler;
+	}
+
+	public function &getCurrRow() {
+		return $this->currRow;
+	}
+
+	public function getFilename() {
+		return $this->filename;
+	}
+
+	public function getHeader() {
+		return $this->header;
+	}
+
+	public function getProperties() {
+		$this->properties['creator'] = $this->xlsHandler->getProperties()->getCreator();
+		$this->properties['modifiedBy'] = $this->xlsHandler->getProperties()->getLastModifiedBy();
+		$this->properties['title'] = $this->xlsHandler->getProperties()->getTitle();
+		$this->properties['subject'] = $this->xlsHandler->getProperties()->getSubject();
+		$this->properties['descripton'] = $this->xlsHandler->getProperties()->getDescription();
+		$this->properties['keywords'] = $this->xlsHandler->getProperties()->getKeywords();
+		$this->properties['category'] = $this->xlsHandler->getProperties()->getCategory();
+
+		return $this->properties;
 	}
 
 	public function read() {

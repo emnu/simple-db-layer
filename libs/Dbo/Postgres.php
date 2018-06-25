@@ -217,7 +217,7 @@ class Postgres {
 
 	public function count($modelVars, $conditions = array(), $options = null) {
 		$result = new PostgresResultSet($modelVars);
-		$result->query = 'SELECT COUNT(*) AS cnt FROM "'.$modelVars['table'].'" '.$modelVars['name'] ;
+		$result->query = 'SELECT COUNT(*) as CNT FROM "'.$modelVars['table'].'" '.$modelVars['name'] ;
 
 		if((isset($options['contain']) && !empty($options['contain'])) || !empty($conditions)) {
 			$replace = $this->_quotedColumn($modelVars['columns']);

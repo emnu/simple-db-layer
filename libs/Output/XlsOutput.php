@@ -15,6 +15,8 @@ class XlsOutput {
 
 	protected $currRow = 1;
 
+	protected $rowCorr = false;
+
 	protected $creator = 'PHPExcel Helper';
 
 	protected $modifiedBy = 'PHPExcel Helper';
@@ -36,21 +38,37 @@ class XlsOutput {
 	);
 
 	public function __construct($filename, $header = 'A1', $options = array()) {
-		$this->filename = $filename;
-
-		$this->setOptions($options);
-
 		$this->headerStart = $header;
 
-		$this->xlsHandler = new PHPExcel();
+		if(is_object($filename)) {
+			$this->filename = $filename->getFilename();
 
-		$this->xlsHandler->getProperties()->setCreator($this->creator)
-									 ->setLastModifiedBy($this->modifiedBy)
-									 ->setTitle($this->title)
-									 ->setSubject($this->subject)
-									 ->setDescription($this->descripton)
-									 ->setKeywords($this->keywords)
-									 ->setCategory($this->category);
+			$this->header = $filename->getHeader();
+
+			$this->xlsHandler = &$filename->getHandler();
+
+			$this->rowCorr = true;
+
+			$this->currRow = &$filename->getCurrRow();
+
+			$this->setOptions($filename->getProperties());
+		}
+		else {
+			$this->filename = $filename;
+
+			$this->setOptions($options);
+
+			$this->xlsHandler = new PHPExcel();
+
+			$this->xlsHandler->getProperties()->setCreator($this->creator)
+										 ->setLastModifiedBy($this->modifiedBy)
+										 ->setTitle($this->title)
+										 ->setSubject($this->subject)
+										 ->setDescription($this->descripton)
+										 ->setKeywords($this->keywords)
+										 ->setCategory($this->category);
+		}
+
 	}
 
 	public function setOptions($options) {
@@ -87,20 +105,29 @@ class XlsOutput {
 		$this->currRow = $colRow + 1;
 	}
 
-	public function save($data) {
+	public function save($data, $currRow = null) {
+		if(empty($currRow))
+			$currRow = $this->currRow;
+		if($this->rowCorr)
+			$currRow--;
+
 		foreach ($this->header as $key => $value) {
+			if(!isset($data[$value]))
+				continue;
+
 			if(isset($this->colType[$key])) {
-				$this->xlsHandler->setActiveSheetIndex(0)->setCellValueExplicit($key.$this->currRow, $data[$value], $this->colType[$key]);
+				$this->xlsHandler->setActiveSheetIndex(0)->setCellValueExplicit($key.$currRow, $data[$value], $this->colType[$key]);
 			}
 			else {
-				$this->xlsHandler->setActiveSheetIndex(0)->setCellValue($key.$this->currRow, $data[$value]);
+				$this->xlsHandler->setActiveSheetIndex(0)->setCellValue($key.$currRow, $data[$value]);
 			}
 		}
-		$this->currRow++;
+		if(!$this->rowCorr)
+			$this->currRow++;
 	}
 
 	public function out() {
-		$objWriter = PHPExcel_IOFactory::createWriter($this->xlsHandler, 'Excel5');
+		$objWriter = PHPExcel_IOFactory::createWriter($this->xlsHandler, 'Excel2007');
 		$objWriter->save($this->filename);
 	}
 }

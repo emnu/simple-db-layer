@@ -22,9 +22,10 @@ class Model {
 
 	/**
 	key :-
-	 - model
-	 - key
-	 - conditions
+	 - model, 
+	 - type, 
+	 - fields, 
+	 - on
 	**/
 	public $foreignModel = array();
 
@@ -86,28 +87,43 @@ class Model {
 		}
 	}
 
-	public function join($contain) {
-		$join = array();
-		foreach ($contain as $model => $fields) {
-			if(is_array($fields)) {
-				if(!in_array($model, array_keys($this->foreignModel)))
-					continue;
-				$tmpModel = ModelObj::buildModel($model);
-				$join[$tmpModel->name]['fields'] = $fields;
+	public function join($contains) {// model, type, fields, on
+		$joins = array();
+		foreach ($contains as $key => $value) {
+			$tmpValue = $value;
+			$tmpKey = $key;
+			if(isset($this->foreignModel[$key])) {
+				$tmpValue = $this->foreignModel[$key];
+			}
+			if(is_string($value) && isset($this->foreignModel[$value])) {
+				$tmpValue = $this->foreignModel[$value];
+				$tmpKey = $value;
+			}
+			if(is_array($value) && !isset($value['model'])) {
+				$tmpValue['fields'] = $value;
+			}
+
+			$tmpModel = ModelObj::buildModel($tmpValue['model']);
+			$tmpValue['table'] = $tmpModel->table;
+
+			if(isset($value['fields'])) {
+				$tmpValue['fields'] = $value['fields'];
+			}
+			if(!isset($tmpValue['fields'])) {
+				$tmpValue['fields'] = array_keys($tmpModel->columns);
+			}
+
+			if(!isset($tmpValue['type']) || (isset($tmpValue['type']) && !in_array($tmpValue['type'], array('LEFT', 'RIGHT', 'INNER')))) {
+				$tmpValue['type'] = 'LEFT';
 			}
 			else {
-				if(!in_array($fields, array_keys($this->foreignModel)))
-					continue;
-				$tmpModel = ModelObj::buildModel($fields);
-				$join[$tmpModel->name]['fields'] = array_keys($tmpModel->columns);
+				$tmpValue['type'] = strtoupper($tmpValue['type']);
 			}
-			$on = array(
-				$tmpModel->name.'.'.$tmpModel->primaryKey.' = '.$this->name.'.'.$this->foreignModel[$tmpModel->name]['key']
-			);
-			$join[$tmpModel->name]['table'] = $tmpModel->table;
-			$join[$tmpModel->name]['on'] = array_unique(array_merge($on, $this->foreignModel[$tmpModel->name]['conditions']));
+
+			$joins[$tmpKey] = $tmpValue;
 		}
-		return $join;
+
+		return $joins;
 	}
 
 	public function find($conditions = array(), $options = null) {

@@ -89,11 +89,25 @@ class Mysql {
 		return $columns;
 	}
 
+	private function _quotes($str) {
+		preg_match_all('/[^a-z0-9_]?([a-z0-9_]+)\.([a-z0-9_]+)[^a-z0-9_]?/i', $str, $matches, PREG_SET_ORDER);
+
+		if(empty($matches))
+			return $str;
+
+		$find = $replace = array();
+		foreach ($matches as $value) {
+			$find[] = $value[1].'.'.$value[2];
+			$replace[] = '`'.$value[1].'`.`'.$value[2].'`';
+		}
+		return str_replace($find, $replace, $str);
+	}
+
 	private function _fields($fields, $prefix) {
 		$tmp = array();
 		foreach ($fields as $key => $value) {
 			if(is_string($key)) {
-				$tmp[$key] = $value.' AS '.$key;
+				$tmp[$key] = $this->_quotes($value).' AS `'.$key.'`';
 			}
 			else {
 				$tmp[$value] = '`'.$prefix.'`.`'.$value.'`';
@@ -144,7 +158,6 @@ class Mysql {
 							$sql['values'][] = $v;
 							$sql['types'] .= isset($this->_varType[gettype($v)])?$this->_varType[gettype($v)]:'s';
 							$tmpqmarks[] = '?';
-							$count++;
 						}
 						$condStr[] = $key . ' IN (' . implode(', ', $tmpqmarks) . ')';
 					}
@@ -164,7 +177,6 @@ class Mysql {
 							$sql['values'][] = $v;
 							$sql['types'] .= isset($this->_varType[gettype($v)])?$this->_varType[gettype($v)]:'s';
 							$tmpqmarks[] = '?';
-							$count++;
 						}
 						$condStr[] = $key . ' IN (' . implode(', ', $tmpqmarks) . ')';
 					}
@@ -180,7 +192,7 @@ class Mysql {
 					$condStr[] = '('. implode(' AND ', $this->_buildConditions($value, $sql)) . ')';
 				}
 				else {
-					$condStr[] = $value;
+					$condStr[] = $this->_quotes($value);
 				}
 			}
 		}
@@ -220,7 +232,7 @@ class Mysql {
 		$sql = array();
 		if(isset($options['contain']) && !empty($options['contain'])) {
 			foreach ($options['contain'] as $key => $value) {
-				$result->query .= ' LEFT JOIN `'.$value['table'].'` AS `'.$key.'` ON ('.$this->buildConditions($value['on'], $sql).')';
+				$result->query .= ' '.$value['type'].' JOIN `'.$value['table'].'` AS `'.$key.'` ON ('.$this->buildConditions($value['on'], $sql).')';
 			}
 			if(isset($sql['values']) && !empty($sql['values'])) {
 				$result->bindArr = array_merge(array($sql['types']), $sql['values']);
@@ -273,11 +285,11 @@ class Mysql {
 			$partition = ' PARTITION ('.$options['partition'].')';
 		}
 
-		$result->query = 'SELECT COUNT(*) AS cnt FROM `'.$modelVars['table'].'`'.$partition.' AS `'.$modelVars['name'].'`';
+		$result->query = 'SELECT COUNT(*) as CNT FROM `'.$modelVars['table'].'`'.$partition.' AS `'.$modelVars['name'].'`';
 
 		if(isset($options['contain']) && !empty($options['contain'])) {
 			foreach ($options['contain'] as $key => $value) {
-				$result->query .= ' LEFT JOIN `'.$value['table'].'` AS `'.$key.'` ON ('.$this->buildConditions($value['on'], $sql).')';
+				$result->query .= ' '.$value['type'].' JOIN `'.$value['table'].'` AS `'.$key.'` ON ('.$this->buildConditions($value['on'], $sql).')';
 			}
 			if(isset($sql['values']) && !empty($sql['values'])) {
 				$result->bindArr = array_merge(array($sql['types']), $sql['values']);

@@ -45,11 +45,25 @@ class Oracle {
 		return $columns;
 	}
 
+	private function _quotes($str) {
+		preg_match_all('/[^a-z0-9_]?([a-z0-9_]+)\.([a-z0-9_]+)[^a-z0-9_]?/i', $str, $matches, PREG_SET_ORDER);
+
+		if(empty($matches))
+			return $str;
+
+		$find = $replace = array();
+		foreach ($matches as $value) {
+			$find[] = $value[1].'.'.$value[2];
+			$replace[] = $value[1].'."'.$value[2].'"';
+		}
+		return str_replace($find, $replace, $str);
+	}
+
 	private function _fields($fields, $prefix) {
 		$tmp = array();
 		foreach ($fields as $key => $value) {
 			if(is_string($key)) {
-				$tmp[$key] = $value.' AS '.$key;
+				$tmp[$key] = $this->_quotes($value).' AS '.$key;
 			}
 			else {
 				$tmp[$value] = $prefix.'."'.$value.'"';
@@ -154,7 +168,7 @@ class Oracle {
 					$condStr[] = '('. implode(' AND ', $this->_buildConditions($value, $bindNames, $count)) . ')';
 				}
 				else {
-					$condStr[] = $value;
+					$condStr[] = $this->_quotes($value);
 				}
 			}
 		}
@@ -191,7 +205,7 @@ class Oracle {
 
 		if(isset($options['contain']) && !empty($options['contain'])) {
 			foreach ($options['contain'] as $key => $value) {
-				$result->query .= ' LEFT JOIN '.$value['table'].' '.$key.' ON ('.$this->buildConditions($value['on'], $result->bindArr).')';
+				$result->query .= ' '.$value['type'].' JOIN '.$value['table'].' '.$key.' ON ('.$this->buildConditions($value['on'], $result->bindArr).')';
 			}
 		}
 
@@ -235,7 +249,7 @@ class Oracle {
 
 		if(isset($options['contain']) && !empty($options['contain'])) {
 			foreach ($options['contain'] as $key => $value) {
-				$result->query .= ' LEFT JOIN '.$value['table'].' '.$key.' ON ('.$this->buildConditions($value['on'], $result->bindArr).')';
+				$result->query .= ' '.$value['type'].' JOIN '.$value['table'].' '.$key.' ON ('.$this->buildConditions($value['on'], $result->bindArr).')';
 			}
 		}
 

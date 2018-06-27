@@ -88,7 +88,7 @@ class Paginate extends ModelObj {
 	}
 
 	public function summary($str) {
-		$str = str_replace(array(':current', ':page'), array($this->current, $this->pages), $str);
+		$str = str_replace(array(':current', ':page', ':total'), array($this->current, $this->pages, $this->total), $str);
 
 		return $str;
 	}

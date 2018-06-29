@@ -30,6 +30,10 @@ class Paginate extends ModelObj {
 
 	private $end  = null;
 
+	private $from = 1;
+
+	private $to = 1;
+
 	public function addPrefix($name) {
 		foreach ($this->paramList as $key => $value) {
 			$this->paramList[$key] = $name.$value;
@@ -43,7 +47,9 @@ class Paginate extends ModelObj {
 
 		$this->total = $this->model->count($conditions);
 
-		$this->pages = intval(($this->total / $this->model->rowPerPage)) + 1;
+		$this->pages = intval(($this->total / $this->model->rowPerPage));
+		if(($this->total % $this->model->rowPerPage) > 0)
+			$this->pages++;
 
 
 		if(isset($this->params[$this->paramList['order']])) {
@@ -68,6 +74,10 @@ class Paginate extends ModelObj {
 		}
 
 		$this->count = ($this->current - 1) * $this->model->rowPerPage;
+		$this->from = $this->count + 1;
+		$this->to = $this->from + $this->model->rowPerPage - 1;
+		if($this->to > $this->total)
+			$this->to = $this->total;
 
 		if(!empty($this->field)) {
 			$options['order'] = $this->field . ' ' . strtoupper($this->order);
@@ -88,7 +98,7 @@ class Paginate extends ModelObj {
 	}
 
 	public function summary($str) {
-		$str = str_replace(array(':current', ':page', ':total'), array($this->current, $this->pages, $this->total), $str);
+		$str = str_replace(array(':current', ':page', ':total', ':from', ':to'), array($this->current, $this->pages, $this->total, $this->from, $this->to), $str);
 
 		return $str;
 	}

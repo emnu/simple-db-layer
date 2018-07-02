@@ -38,6 +38,10 @@ class XlsOutput {
 	);
 
 	public function __construct($filename, $header = 'A1', $options = array()) {
+		if(!class_exists('ZipArchive')) {
+			PHPExcel_Settings::setZipClass(PHPExcel_Settings::PCLZIP);
+		}
+
 		$this->headerStart = $header;
 
 		if(is_object($filename)) {

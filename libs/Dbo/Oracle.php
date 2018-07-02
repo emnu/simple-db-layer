@@ -214,8 +214,12 @@ class Oracle {
 			$result->query .= ' WHERE ' . $condStr;
 		}
 
+		if(isset($options['group']) && !empty($options['group'])) {
+			$result->query .= ' GROUP BY ' . $this->_quotes($options['group']);
+		}
+
 		if(isset($options['order']) && !empty($options['order'])) {
-			$result->query .= ' ORDER BY ' . $options['order'];
+			$result->query .= ' ORDER BY ' . $this->_quotes$options['order']);
 		}
 
 		if(isset($options['page']) && !empty($options['page'])) {
@@ -330,8 +334,11 @@ class OracleResultSet {
 
 	public $bindArr = array();
 
+	public $name = null;
+
 	public function __construct(&$modelVars) {
 		$this->primaryKey = $modelVars['primaryKey'];
+		$this->name = $modelVars['name'];
 	}
 
 	public function execute($conn) {
@@ -360,6 +367,8 @@ class OracleResultSet {
 			die($e['message']."\n".$this->query);
 		}
 		$this->numRows = oci_num_rows($this->statement);
+
+		Log::query($this->query, $this->name, $this->numRows);
 	}
 
 	public function getArray() {

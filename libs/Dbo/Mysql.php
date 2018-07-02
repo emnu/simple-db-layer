@@ -245,8 +245,12 @@ class Mysql {
 			$result->bindArr = array_merge(array($sql['types']), $sql['values']);
 		}
 
+		if(isset($options['group']) && !empty($options['group'])) {
+			$result->query .= ' GROUP BY ' . $this->_quotes($options['group']);
+		}
+
 		if(isset($options['order']) && !empty($options['order'])) {
-			$result->query .= ' ORDER BY ' . $options['order'];
+			$result->query .= ' ORDER BY ' . $this->_quotes($options['order']);
 		}
 
 		if(isset($options['page']) && !empty($options['page'])) {
@@ -385,12 +389,18 @@ class MysqlResultSet {
 
 	public $fields = array();
 
+	public $name = null;
+
 	public function __construct(&$modelVars) {
 		$this->primaryKey = $modelVars['primaryKey'];
+		$this->name = $modelVars['name'];
 	}
 
 	public function execute($conn, $fields = array()) {
 		$this->statement = $conn->prepare($this->query);
+		if(!$this->statement) {
+			die($conn->error . "\n" . $this->query);
+		}
 
 		if(!empty($this->bindArr)) {
 			call_user_func_array(array($this->statement, 'bind_param'), $this->bindArr);
@@ -420,6 +430,8 @@ class MysqlResultSet {
 			}
 			call_user_func_array(array($this->statement, 'bind_result'), $this->fields);
 		}
+
+		Log::query($this->query, $this->name, $this->numRows);
 	}
 
 	public function query($conn) {
@@ -444,6 +456,8 @@ class MysqlResultSet {
 		else {
 			$this->numRows = $this->statement->affected_rows;
 		}
+
+		Log::query($this->query, $this->name, $this->numRows);
 	}
 
 	public function getArray() {

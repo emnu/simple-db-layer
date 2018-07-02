@@ -10,6 +10,8 @@ define('LIB_PATH', dirname(__FILE__).DIRECTORY_SEPARATOR);
 include_once(LIB_PATH . 'ErrorHandler.php');
 set_error_handler("ErrorHandler");
 
+include_once(LIB_PATH . 'Log.php');
+
 include_once(LIB_PATH . 'Task.php');
 Task::setConfig();
 

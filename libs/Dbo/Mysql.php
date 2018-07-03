@@ -470,7 +470,11 @@ class MysqlResultSet {
 		}
 		else {
 			if($this->statement->fetch()) {
-				return $this->fields;
+				$tmp = array();
+				foreach ($this->fields as $key => $value) { // convert from 'by reference' to 'by value'
+					$tmp[$key] = $value;
+				}
+				return $tmp;
 			}
 			else {
 				$this->statement->close();

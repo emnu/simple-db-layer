@@ -95,6 +95,7 @@ class XlsOutput {
 
 		$colKey = strtoupper($fromMatch[0][1]);
 		$colRow = $fromMatch[0][2];
+		$this->xlsHandler->getActiveSheet()->getStyle($colRow)->getFont()->setBold(true);
 		foreach ($header as $key => $value) {
 			if(is_string($key)) {
 				$this->header[$colKey] = $key;

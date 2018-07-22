@@ -31,10 +31,12 @@ class XlsOutput {
 
 	protected $category = '';
 
+	protected $type = 'Excel2007';
+
 	protected $defaultsKey = array(
 		'creator', 'modifiedBy', 'modifiedBy',
 		'title', 'subject', 'descripton',
-		'keywords', 'category'
+		'keywords', 'category', 'type'
 	);
 
 	public function __construct($filename, $header = 'A1', $options = array()) {
@@ -93,6 +95,7 @@ class XlsOutput {
 
 		$colKey = strtoupper($fromMatch[0][1]);
 		$colRow = $fromMatch[0][2];
+		$this->xlsHandler->getActiveSheet()->getStyle($colRow)->getFont()->setBold(true);
 		foreach ($header as $key => $value) {
 			if(is_string($key)) {
 				$this->header[$colKey] = $key;
@@ -131,7 +134,7 @@ class XlsOutput {
 	}
 
 	public function out() {
-		$objWriter = PHPExcel_IOFactory::createWriter($this->xlsHandler, 'Excel2007');
+		$objWriter = PHPExcel_IOFactory::createWriter($this->xlsHandler, $this->type);
 		$objWriter->save($this->filename);
 	}
 }

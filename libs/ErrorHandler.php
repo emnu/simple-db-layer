@@ -40,7 +40,7 @@ function ErrorHandler($errno, $errmsg, $filename, $linenum, $vars)
         $err['vartrace'] = wddx_serialize_value($vars, "Variables");
     }
     
-    if(CONFIG::$debug) {
+    if(CONFIG::$debug > 0) {
         echo "[" . $err['datetime'] . "] " . $err['errortype'] . "[" . $err['errornum'] . "]: " . $err['errormsg'] . " in " . $err['scriptname'] . " on line " . $err['scriptlinenum'] . "\n";
     }
 

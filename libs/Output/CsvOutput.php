@@ -9,6 +9,8 @@ class CsvOutput {
 
 	protected $fileHandler = null;
 
+	protected $data = array();
+
 	public function __construct($filename, $append = false) {
 		$mode = 'w';
 		if($append) {
@@ -33,11 +35,18 @@ class CsvOutput {
 	}
 
 	public function save($data) {
-		$out = array();
+		$tmp = array();
 		foreach ($this->header as $value) {
-			$out[] = $data[$value];
+			$tmp[] = $data[$value];
+		}
+		$this->data[] = $tmp;
+	}
+
+	public function out() {
+		foreach ($this->data as $out) {
+			fputcsv($this->fileHandler, $out);
 		}
 
-		fputcsv($this->fileHandler, $out);
+		$this->data = array();
 	}
 }

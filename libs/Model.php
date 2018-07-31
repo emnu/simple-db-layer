@@ -2,6 +2,8 @@
 
 include_once('ConnectionManager.php');
 
+include_once('Behaviour.php');
+
 class Model {
 
 	public $name = null;
@@ -29,6 +31,8 @@ class Model {
 	**/
 	public $foreignModel = array();
 
+	public $behaviours = array();
+
 	public function __construct() {
 		$this->name = get_class($this);
 		$this->getSchema();
@@ -47,6 +51,13 @@ class Model {
 	}
 
 	public function __call($func, $params) {
+		foreach ($this->attached as $behaviour => $configs) {
+			$tmp = $this->getBehaviour($behaviour, $configs);
+			if(method_exists($tmp, $func)) {
+				return call_user_func_array(array($tmp, $func), $params);
+			}
+		}
+		
 		$method = '__cache_'.$func;
 		if(!method_exists($this, $method)) {
 			die('method does not exist');
@@ -84,6 +95,31 @@ class Model {
 
 		foreach ($this->uses as $modelName) {
 			$this->{$modelName}->clearCache();
+		}
+	}
+
+	public function getBehaviour($behaviour, $configs) {
+		if(is_string($configs)) {
+			$behaviourName = $configs;
+			$behaviourConfigs = array();
+		}
+		else{
+			$behaviourName = $behaviour;
+			$behaviourConfigs = $configs;
+		}
+
+		if(isset($this->behaviours[$behaviourName])) {
+			return $this->behaviours[$behaviourName];
+		}
+
+		$behaviourLib = APP_PATH . 'models' . DIRECTORY_SEPARATOR . 'behaviours' . DIRECTORY_SEPARATOR . $behaviourName . '.php';
+		if(is_file($behaviourLib)) {
+			include_once($behaviourLib);
+			$this->behaviours[$behaviourName] = new $behaviourName($this->name, $behaviourConfigs);
+			return $this->behaviours[$behaviourName];
+		}
+		else {
+			die('file not exist');
 		}
 	}
 
@@ -142,19 +178,73 @@ class Model {
 		return $db->count(get_object_vars($this), $conditions, $options);
 	}
 
-	public function insert($data) {
+	public function insert($data, $callback = true) {
+		if(!empty($this->attached) && $callback) {
+			foreach ($this->attached as $behaviour => $configs) {
+				$this->getBehaviour($behaviour, $configs)->beforeSave($data);
+			}
+		}
+
 		$db = ConnectionManager::loadDb($this->connName);
-		return $db->insert(get_object_vars($this), $data);
+		$result = $db->insert(get_object_vars($this), $data);
+
+		if(!$result) {
+			return $result;
+		}
+
+		if(!empty($this->attached) && $callback) {
+			foreach ($this->attached as $behaviour => $configs) {
+				$this->getBehaviour($behaviour, $configs)->afterSave($data);
+			}
+		}
+
+		return $result;
 	}
 
-	public function update($data, $conditions, $options = null) {
+	public function update($data, $conditions, $options = null, $callback = true) {
+		if(!empty($this->attached) && $callback) {
+			foreach ($this->attached as $behaviour => $configs) {
+				$this->getBehaviour($behaviour, $configs)->beforeSave($data, $conditions);
+			}
+		}
+
 		$db = ConnectionManager::loadDb($this->connName);
-		return $db->update(get_object_vars($this), $data, $conditions, $options);
+		$result = $db->update(get_object_vars($this), $data, $conditions, $options);
+
+		if(!$result) {
+			return $result;
+		}
+
+		if(!empty($this->attached) && $callback) {
+			foreach ($this->attached as $behaviour => $configs) {
+				$this->getBehaviour($behaviour, $configs)->afterSave($data, $conditions);
+			}
+		}
+
+		return $result;
 	}
 
-	public function delete($conditions, $options = null) {
+	public function delete($conditions, $options = null, $callback = true) {
+		if(!empty($this->attached) && $callback) {
+			foreach ($this->attached as $behaviour => $configs) {
+				$this->getBehaviour($behaviour, $configs)->beforeDelete();
+			}
+		}
+
 		$db = ConnectionManager::loadDb($this->connName);
-		return $db->delete(get_object_vars($this), $conditions, $options);	
+		$result = $db->delete(get_object_vars($this), $conditions, $options);
+
+		if(!$result) {
+			return $result;
+		}
+
+		if(!empty($this->attached) && $callback) {
+			foreach ($this->attached as $behaviour => $configs) {
+				$this->getBehaviour($behaviour, $configs)->afterDelete();
+			}
+		}
+
+		return $result;
 	}
 
 	public function query($sql) {

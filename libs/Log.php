@@ -15,7 +15,7 @@ class Log {
 
 	static function showQueries() {
 		if(CONFIG::$debug > 1) {
-			$out = '<table><tr><td>No.</td><td>SQL</td><td>Model</td><td>Affected Rows</td></tr>';
+			$out = '<table><tr><th>No.</th><th>SQL</th><th>Model</th><th>Affected Rows</th></tr>';
 			foreach (self::$queryLog as $key => $value) {
 				$out .= '<tr><td>'.($key+1).'</td><td>'.$value['sql'].'</td><td>'.$value['model'].'</td><td>'.$value['affected'].'</td></tr>';
 			}

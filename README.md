@@ -15,9 +15,14 @@ Features
 
  * find, insert, update, delete, count, query, connect
  * cache function
+ * behaviour
 
 -- csv --
 
 -- uses --
 
 --  validation --
+
+-- helpers --
+
+* paginate

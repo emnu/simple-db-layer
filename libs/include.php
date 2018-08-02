@@ -7,17 +7,17 @@ if(!(php_sapi_name() == 'cli')) {
 define('APP_PATH', dirname(dirname(__FILE__)).DIRECTORY_SEPARATOR);
 define('LIB_PATH', dirname(__FILE__).DIRECTORY_SEPARATOR);
 
-include_once(LIB_PATH . 'ErrorHandler.php');
-set_error_handler("ErrorHandler");
-
-include_once(LIB_PATH . 'Log.php');
-
-include_once(LIB_PATH . 'Task.php');
-Task::setConfig();
+include_once(LIB_PATH . 'basics.php');
 
 include_once(APP_PATH . 'config.php');
 
-include_once(LIB_PATH . 'basics.php');
+include_once(LIB_PATH . 'Task.php');
+
+include_once(LIB_PATH . 'ErrorHandler.php');
+
+include_once(LIB_PATH . 'Exceptions.php');
+
+include_once(LIB_PATH . 'Log.php');
 
 include_once(LIB_PATH . 'Cache.php');
 

@@ -1,5 +1,6 @@
 <?php
 
+if(function_exists('mysqli_connect')) {
 class Mysql {
 
 	protected $_conn = null;
@@ -399,7 +400,7 @@ class MysqlResultSet {
 	public function execute($conn, $fields = array()) {
 		$this->statement = $conn->prepare($this->query);
 		if(!$this->statement) {
-			die($conn->error . "\n" . $this->query);
+			throw new DBErrorException($conn->error);
 		}
 
 		if(!empty($this->bindArr)) {
@@ -412,7 +413,7 @@ class MysqlResultSet {
 			return true;
 		}
 		if($this->statement->execute() == false) {
-			die($this->statement->error."\n".$this->query);
+			throw new DBErrorException($this->statement->error);
 		}
 		if(preg_match("/^select[\s]+/i", $this->query)) {
 			$this->statement->store_result();
@@ -448,7 +449,7 @@ class MysqlResultSet {
 			}
 		}
 		else {
-			die($conn->error);
+			throw new DBErrorException($conn->error);
 		}
 		if(preg_match("/^select[\s]+/i", $this->query)) {
 			$this->numRows = $this->statement->num_rows;
@@ -482,4 +483,368 @@ class MysqlResultSet {
 			}
 		}
 	}
+}
+}
+else {
+class Mysql {
+
+	protected $_conn = null;
+
+	protected $_config = array(
+		'type'     => 'mysql',
+		'username' => 'root',
+		'password' => '',
+		'host' => 'localhost',
+		'port' => 3306,
+		'database' => ''
+	);
+
+	protected $_fieldType = array(
+			1 => 'tinyint',
+			2 => 'smallint',
+			3 => 'int',
+			4 => 'float',
+			5 => 'double',
+			7 => 'timestamp',
+			8 => 'bigint',
+			9 => 'mediumint',
+			10 => 'date',
+			11 => 'time',
+			12 => 'datetime',
+			13 => 'year',
+			16 => 'bit',
+			252 => 'text',
+			253 => 'varchar',
+			254 => 'char',
+			246 => 'decimal'
+		);
+
+	protected $_varType = array(
+			'boolean' => 'i',
+			'integer' => 'i',
+			'float' => 'd',
+			'double' => 'd',
+			'string' => 's',
+		);
+
+	public function __construct($config) {
+		$this->_config = array_merge($this->_config, $config);
+		$this->connect();
+	}
+
+	public function connect() {
+		$this->_conn = mysql_connect($this->_config['host'].':'.$this->_config['port'], $this->_config['username'], $this->_config['password']);
+		mysql_select_db($this->_config['database'], $this->_conn);
+	}
+
+	public function check() {
+		if(!mysql_ping($this->_conn)) {
+			$this->connect();
+		}
+	}
+
+	public function getSchema($table) {
+		$result = mysql_query('SELECT * FROM '.$table.' LIMIT 0');
+
+		$columns = array();
+		for ($i=0; $i < mysql_num_fields($result); $i++) {
+			$columns[mysql_field_name($result, $i)] = array(
+				'type' => mysql_field_type($result, $i),
+				'size' => mysql_field_len($result, $i)
+			);
+		}
+		return $columns;
+	}
+
+	private function _quotes($str) {
+		preg_match_all('/[^a-z0-9_]?([a-z0-9_]+)\.([a-z0-9_]+)[^a-z0-9_]?/i', $str, $matches, PREG_SET_ORDER);
+
+		if(empty($matches))
+			return $str;
+
+		$find = $replace = array();
+		foreach ($matches as $value) {
+			$find[] = $value[1].'.'.$value[2];
+			$replace[] = '`'.$value[1].'`.`'.$value[2].'`';
+		}
+		return str_replace($find, $replace, $str);
+	}
+
+	private function _fields($fields, $prefix) {
+		$tmp = array();
+		foreach ($fields as $key => $value) {
+			if(is_string($key)) {
+				$value = $this->_quotes($value);
+				$tmp[$key] = $value.' AS `'.$key.'`';
+			}
+			else {
+				$tmp[$value] = '`'.$prefix.'`.`'.$value.'`';
+			}
+		}
+		return $tmp;
+	}
+
+	public function buildUpdateSQL($data, $modelVars) {
+		$sql = array();
+		foreach($data as $key => $value) {
+			if(in_array($key, array_keys($modelVars['columns']))) {
+				$vals = (gettype($value) == 'string')?"'".mysql_real_escape_string($value)."'":$value;
+				$sql[] = '`'.$key.'` = '.$vals;
+			}
+		}
+		return $sql;
+	}
+
+	public function buildInsertSQL($data, $modelVars) {
+		$sql = array();
+		foreach($data as $key => $value) {
+			if(in_array($key, array_keys($modelVars['columns']))) {
+				$sql['fields'][] = $key;
+				$sql['values'][] = (gettype($value) == 'string')?"'".mysql_real_escape_string($value)."'":$value;
+			}
+		}
+		return $sql;
+	}
+
+	private function _buildConditions($conditions, &$sql) {
+		$condStr = array();
+
+		foreach ($conditions as $key => $value) {
+			if(is_string($key)) {
+				if(preg_match("/^(or|and)$/i", trim($key))) {
+					$condStr[] = '('. implode(' '.strtoupper(trim($key)).' ', $this->_buildConditions($value, $sql)) . ')';
+				}
+				elseif(!preg_match("/(\b(is|not|like|null)\b|[<>=!]+)/i", trim($key))) {
+					if(is_array($value)) {
+						$tmpqmarks = array();
+						foreach ($value as $v) {
+							$tmpvals[] = (gettype($v) == 'string')?"'".mysql_real_escape_string($v)."'":$v;
+						}
+						$condStr[] = $key . ' IN (' . implode(', ', $tmpvals) . ')';
+					}
+					elseif(is_null($value)) {
+						$condStr[] = $key . ' IS NULL';
+					}
+					else {
+						$vals = (gettype($value) == 'string')?"'".mysql_real_escape_string($value)."'":$value;
+						$condStr[] = $key . ' = '.$vals;
+					}
+				}
+				else {
+					if(is_array($value)) {
+						$tmpqmarks = array();
+						foreach ($value as $v) {
+							$tmpvals[] = (gettype($v) == 'string')?"'".mysql_real_escape_string($v)."'":$v;
+						}
+						$condStr[] = $key . ' IN (' . implode(', ', $tmpvals) . ')';
+					}
+					else {
+						$vals = (gettype($value) == 'string')?"'".mysql_real_escape_string($value)."'":$value;
+						$condStr[] = $key . ' ' . $vals;
+					}
+				}
+			}
+			else {
+				if(is_array($value)) {
+					$condStr[] = '('. implode(' AND ', $this->_buildConditions($value, $sql)) . ')';
+				}
+				else {
+					$condStr[] = $this->_quotes($value);
+				}
+			}
+		}
+
+		return $condStr;
+	}
+
+	public function buildConditions($conditions, &$sql) {
+		return implode(' AND ', $this->_buildConditions($conditions, $sql));
+	}
+
+	public function find($modelVars, $conditions = array(), $options = null) {
+		$result = new MysqlResultSet($modelVars);
+
+		$fields = array_keys($modelVars['columns']);
+		if(isset($options['fields']) && !empty($options['fields'])) {
+			$fields = $options['fields'];
+		}
+		$fields = $this->_fields($fields, $modelVars['name']);
+
+		if(isset($options['contain']) && !empty($options['contain'])) {
+			foreach ($options['contain'] as $key => $value) {
+				$fields = array_merge($this->_fields($value['fields'], $key), $fields);
+			}
+		}
+
+		$partition = '';
+		if(isset($options['partition']) && !empty($options['partition'])) {
+			$partition = ' PARTITION ('.$options['partition'].')';
+		}
+
+		$result->query = 'SELECT '.implode(', ', $fields).' FROM `'.$modelVars['table'].'`'.$partition.' AS `'.$modelVars['name'].'`';
+
+		$sql = array();
+		if(isset($options['contain']) && !empty($options['contain'])) {
+			foreach ($options['contain'] as $key => $value) {
+				$result->query .= ' '.$value['type'].' JOIN `'.$value['table'].'` AS `'.$key.'` ON ('.$this->buildConditions($value['on'], $sql).')';
+			}
+		}
+
+		if(!empty($conditions)) {
+			$condStr = $this->buildConditions($conditions, $sql);
+			$result->query .= ' WHERE ' . $condStr;
+		}
+
+		if(isset($options['group']) && !empty($options['group'])) {
+			$result->query .= ' GROUP BY ' . $this->_quotes($options['group']);
+		}
+
+		if(isset($options['order']) && !empty($options['order'])) {
+			$result->query .= ' ORDER BY ' . $this->_quotes($options['order']);
+		}
+
+		if(isset($options['page']) && !empty($options['page'])) {
+			if(isset($options['limit']) && !empty($options['limit'])) {
+				$modelVars['rowPerPage'] = $options['limit'];
+			}
+			$start = (($options['page'] - 1) * $modelVars['rowPerPage']);
+			$result->query .= ' LIMIT '.$start.', '.$modelVars['rowPerPage'];
+		}
+		elseif(isset($options['limit']) && !empty($options['limit'])) {
+			$result->query .= ' LIMIT '.$options['limit'];
+		}
+
+		$result->execute($this->_conn);
+		return $result;
+	}
+
+	public function count($modelVars, $conditions = array(), $options = null) {
+		$result = new MysqlResultSet($modelVars);
+
+		$partition = '';
+		if(isset($options['partition']) && !empty($options['partition'])) {
+			$partition = ' PARTITION ('.$options['partition'].')';
+		}
+
+		$result->query = 'SELECT COUNT(*) AS cnt FROM `'.$modelVars['table'].'`'.$partition.' AS `'.$modelVars['name'].'`';
+
+		if(isset($options['contain']) && !empty($options['contain'])) {
+			foreach ($options['contain'] as $key => $value) {
+				$result->query .= ' '.$value['type'].' JOIN `'.$value['table'].'` AS `'.$key.'` ON ('.$this->buildConditions($value['on'], $sql).')';
+			}
+		}
+
+		if(!empty($conditions)) {
+			$sql = array();
+			$condStr = $this->buildConditions($conditions, $sql);
+			$result->query .= ' WHERE ' . $condStr;
+		}
+		$result->execute($this->_conn);
+		$count = $result->getArray();
+		return $count['cnt'];
+	}
+
+	public function insert($modelVars, $data) {
+		$result = new MysqlResultSet($modelVars);
+		$result->query = 'INSERT INTO `'.$modelVars['table'].'`';
+
+		if(!empty($data)) {
+			$sql = $this->buildInsertSQL($data, $modelVars);
+			$result->query .= ' (`'.implode('`, `', $sql['fields']).'`) VALUES ('.implode(', ', $sql['values']).')';
+		}
+		$result->execute($this->_conn);
+		return $result;
+	}
+
+	public function update($modelVars, $data, $conditions, $options = null) {
+		$result = new MysqlResultSet($modelVars);
+
+		$partition = '';
+		if(isset($options['partition']) && !empty($options['partition'])) {
+			$partition = ' PARTITION ('.$options['partition'].')';
+		}
+
+		$result->query = 'UPDATE `'.$modelVars['table'].'`'.$partition;
+
+		$sql = array();
+		if(!empty($data)) {
+			$sql = $this->buildUpdateSQL($data, $modelVars);
+			$result->query .= ' SET '.implode(', ', $sql);
+		}
+		if(!empty($conditions)) {
+			$condStr = $this->buildConditions($conditions, $sql);
+			$result->query .= ' WHERE ' . $condStr;
+		}
+		$result->execute($this->_conn);
+		return $result;
+	}
+
+	public function delete($modelVars, $conditions, $options = null) {
+		$result = new MysqlResultSet($modelVars);
+		$result->query = 'DELETE FROM '.$modelVars['table'];
+
+		if(!empty($conditions)) {
+			$sql = array();
+			$condStr = $this->buildConditions($conditions, $sql);
+			$result->query .= ' WHERE ' . $condStr;
+		}
+		$result->execute($this->_conn);
+		return $result;
+	}
+
+	public function query($modelVars, $sql) {
+		$result = new MysqlResultSet($modelVars);
+		$result->query = $sql;
+
+		$result->execute($this->_conn);
+		return $result;
+	}
+}
+
+class MysqlResultSet {
+	public $id = null;
+
+	public $query = null;
+
+	protected $statement = null;
+
+	protected $assoc = false;
+
+	public $primaryKey = null;
+
+	public $numRows = 0;
+
+	public $name = null;
+
+	public function __construct(&$modelVars) {
+		$this->primaryKey = $modelVars['primaryKey'];
+		$this->name = $modelVars['name'];
+	}
+
+	public function execute($conn) {
+		if(CONFIG::$dryRun && preg_match("/((^update[\s]+)|(^insert[\s]+into[\s]+))/i", $this->query)) {
+			out("execute query: ".$this->query);
+			return true;
+		}
+		$this->statement = mysql_query($this->query, $conn);
+		if(!$this->statement) {
+			throw new DBErrorException(mysql_error());
+		}
+		if(preg_match("/^select[\s]+/i", $this->query)) {
+			$this->numRows = mysql_num_rows($this->statement);
+		}
+		else {
+			$this->numRows = mysql_affected_rows($conn);
+		}
+		if(isset($this->primaryKey) && !empty($this->primaryKey) && preg_match("/^insert[\s]+into[\s]+/i", $this->query)) {
+			$this->id = mysql_insert_id($conn);
+		}
+
+		Log::query($this->query, $this->name, $this->numRows);
+	}
+
+	public function getArray() {
+		return mysql_fetch_assoc($this->statement);
+	}
+}
 }

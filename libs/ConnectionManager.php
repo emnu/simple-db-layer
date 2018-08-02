@@ -29,8 +29,6 @@ class ConnectionManager {
 			self::$_dataSources[$name] = new $class($config);
 			return self::$_dataSources[$name];
 		}
-		else {
-			die('DB config not found: '.$name);
-		}
+		throw new DBNotFoundException($name);
 	}
 }

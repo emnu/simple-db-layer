@@ -75,3 +75,4 @@ class Task {
 		error_log( $message, 3, self::$taskFile);
 	}
 }
+Task::setConfig();

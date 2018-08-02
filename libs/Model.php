@@ -60,7 +60,7 @@ class Model {
 		
 		$method = '__cache_'.$func;
 		if(!method_exists($this, $method)) {
-			die('method does not exist');
+			throw new ModelException('method '.$method.' does not exist');
 		}
 
 		$key = sha1(json_encode($params));
@@ -118,9 +118,7 @@ class Model {
 			$this->behaviours[$behaviourName] = new $behaviourName($this->name, $behaviourConfigs);
 			return $this->behaviours[$behaviourName];
 		}
-		else {
-			die('file not exist');
-		}
+		throw new ModelException('Behaviour '.$behaviourName.' not found');
 	}
 
 	public function join($contains) {// model, type, fields, on

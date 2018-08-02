@@ -1,7 +1,7 @@
 <?php
 
 function pr($data) {
-	if(CONFIG::$debug) {
+	if(CONFIG::$debug > 0) {
 		echo "<pre>";
 		print_r($data);
 		echo "</pre>";

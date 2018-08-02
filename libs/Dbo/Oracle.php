@@ -364,7 +364,7 @@ class OracleResultSet {
 		}
 		if(oci_execute($this->statement) == false) {
 			$e = oci_error($conn);
-			die($e['message']."\n".$this->query);
+			throw new DBErrorException($e['message']);
 		}
 		$this->numRows = oci_num_rows($this->statement);
 

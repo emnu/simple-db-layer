@@ -347,7 +347,7 @@ class PostgresResultSet {
 		}
 		$this->statement = pg_execute($conn, $stmtname, $this->bindArr);
 		if($this->statement == false) {
-			die(pg_last_error($conn)."\n".$this->query);
+			throw new DBErrorException(pg_last_error($conn));
 		}
 
 		if(isset($this->primaryKey) && !empty($this->primaryKey) && preg_match("/^insert[\s]+into[\s]+/i", $this->query)) {

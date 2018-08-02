@@ -50,3 +50,4 @@ function ErrorHandler($errno, $errmsg, $filename, $linenum, $vars)
     //     mail("phpdev@example.com", "Critical User Error", $err);
     // }
 }
+set_error_handler("ErrorHandler");

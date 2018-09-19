@@ -12,11 +12,27 @@ class Behaviour {
 		$this->configs = $configs;
 	}
 
-	public function beforeSave($data, $conditions = array()) {
+	public function beforeInsert(&$data, $conditions = array()) {
 		return true;
 	}
 
-	public function afterSave($data, $conditions = array()) {
+	public function afterInsert(&$data, $conditions = array()) {
+		return true;
+	}
+
+	public function beforeUpdate(&$data, $conditions = array()) {
+		return true;
+	}
+
+	public function afterUpdate(&$data, $conditions = array()) {
+		return true;
+	}
+
+	public function beforeSave(&$data, $conditions = array()) {
+		return true;
+	}
+
+	public function afterSave(&$data, $conditions = array()) {
 		return true;
 	}
 

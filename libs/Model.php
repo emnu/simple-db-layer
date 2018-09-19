@@ -179,7 +179,7 @@ class Model {
 	public function insert($data, $callback = true) {
 		if(!empty($this->attached) && $callback) {
 			foreach ($this->attached as $behaviour => $configs) {
-				$this->getBehaviour($behaviour, $configs)->beforeSave($data);
+				$this->getBehaviour($behaviour, $configs)->beforeInsert($data);
 			}
 		}
 
@@ -192,7 +192,7 @@ class Model {
 
 		if(!empty($this->attached) && $callback) {
 			foreach ($this->attached as $behaviour => $configs) {
-				$this->getBehaviour($behaviour, $configs)->afterSave($data);
+				$this->getBehaviour($behaviour, $configs)->afterInsert($data);
 			}
 		}
 
@@ -202,7 +202,7 @@ class Model {
 	public function update($data, $conditions, $options = null, $callback = true) {
 		if(!empty($this->attached) && $callback) {
 			foreach ($this->attached as $behaviour => $configs) {
-				$this->getBehaviour($behaviour, $configs)->beforeSave($data, $conditions);
+				$this->getBehaviour($behaviour, $configs)->beforeUpdate($data, $conditions);
 			}
 		}
 
@@ -215,7 +215,7 @@ class Model {
 
 		if(!empty($this->attached) && $callback) {
 			foreach ($this->attached as $behaviour => $configs) {
-				$this->getBehaviour($behaviour, $configs)->afterSave($data, $conditions);
+				$this->getBehaviour($behaviour, $configs)->afterUpdate($data, $conditions);
 			}
 		}
 

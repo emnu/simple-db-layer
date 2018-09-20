@@ -28,6 +28,8 @@ class Paginate extends ModelObj {
 
 	private $start = null;
 
+	private $tmpStart = null;
+
 	private $end  = null;
 
 	private $from = 1;
@@ -83,7 +85,7 @@ class Paginate extends ModelObj {
 			$options['order'] = $this->field . ' ' . strtoupper($this->order);
 		}
 
-		$this->start = (($this->current - $this->links) > 0)?$this->current - $this->links:1;
+		$this->tmpStart = $this->start = (($this->current - $this->links) > 0)?$this->current - $this->links:1;
 		$this->end = (($this->current + $this->links) < $this->pages)?$this->current + $this->links:$this->pages;
 
 		$options['page'] = $this->current;
@@ -148,12 +150,13 @@ class Paginate extends ModelObj {
 	public function numbers() {
 		$params = $this->params;
 
-		$params[$this->paramList['page']] = $this->start;
+		$params[$this->paramList['page']] = $this->tmpStart;
 
-		if($this->start > $this->end) {
+		if($this->tmpStart > $this->end) {
+			$this->tmpStart = $this->start;
 			return false;
 		}
-		$this->start++;
+		$this->tmpStart++;
 
 		return array($params[$this->paramList['page']], $this->generateGet($params));
 	}

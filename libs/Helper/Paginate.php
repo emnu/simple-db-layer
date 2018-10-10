@@ -47,7 +47,7 @@ class Paginate extends ModelObj {
 
 		$this->params = $_GET;
 
-		$this->total = $this->model->count($conditions);
+		$this->total = $this->model->count($conditions, $options);
 
 		$this->pages = intval(($this->total / $this->model->rowPerPage));
 		if(($this->total % $this->model->rowPerPage) > 0)

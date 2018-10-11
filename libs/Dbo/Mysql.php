@@ -397,6 +397,17 @@ class MysqlResultSet {
 		$this->name = $modelVars['name'];
 	}
 
+	private function refValues($arr) {
+		if (strnatcmp(phpversion(),'5.3') >= 0) { //Reference is required for PHP 5.3+
+			$refs = array();
+			foreach($arr as $key => $value)
+				$refs[$key] = &$arr[$key];
+			return $refs;
+		}
+
+		return $arr;
+	}
+
 	public function execute($conn, $fields = array()) {
 		$this->statement = $conn->prepare($this->query);
 		if(!$this->statement) {
@@ -404,7 +415,8 @@ class MysqlResultSet {
 		}
 
 		if(!empty($this->bindArr)) {
-			call_user_func_array(array($this->statement, 'bind_param'), $this->bindArr);
+			call_user_func_array(array($this->statement, 'bind_param'), $this->refValues($this->bindArr));
+			
 		}
 
 		if(CONFIG::$dryRun && preg_match("/((^update[\s]+)|(^insert[\s]+into[\s]+))/i", $this->query)) {

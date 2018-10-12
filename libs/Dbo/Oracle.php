@@ -219,7 +219,7 @@ class Oracle {
 		}
 
 		if(isset($options['order']) && !empty($options['order'])) {
-			$result->query .= ' ORDER BY ' . $this->_quotes$options['order']);
+			$result->query .= ' ORDER BY ' . $this->_quotes($options['order']);
 		}
 
 		if(isset($options['page']) && !empty($options['page'])) {

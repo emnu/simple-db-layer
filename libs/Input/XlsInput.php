@@ -77,7 +77,13 @@ class XlsInput {
 		$data = array();
 		$eof = true;
 		foreach ($this->header as $key => $value) {
-			$data[$value] = $this->xlsHandler->getActiveSheet()->getCell($key.$this->currRow)->getValue();
+			$tmp = $this->xlsHandler->getActiveSheet()->getCell($key.$this->currRow);
+			if(PHPExcel_Shared_Date::isDateTime($tmp)) {
+				$data[$value] = date('Y-m-d H:i:s', PHPExcel_Shared_Date::ExcelToPHP($tmp->getValue()));
+			}
+			else {
+				$data[$value] = $tmp->getValue();
+			}
 			if(!empty($data[$value])) {
 				$eof = false;
 			}

@@ -12,8 +12,6 @@ class Soap extends SoapClient {
 
 	protected $wsdlPath = '';
 
-	protected $wsdlFile = '';
-
 	public function __construct($wsdl, $options = array()) {
 		$this->setOptions($options);
 		$cleanedWSDL = $this->cacheWSDL($wsdl);
@@ -68,9 +66,11 @@ class Soap extends SoapClient {
 		// @TODO: replace <soap12:binding style="document" transport="http://www.w3.org/2003/05/soap/bindings/HTTP/"/> to <soap12:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
 		preg_match('/<soap12:binding.*(\/>|<\/soap12:binding>)/', $wsdlContent, $matches);
 
-		$find = $matches[0];
-		$replace = preg_replace('/transport\s*=\s*".*"/', 'transport="http://schemas.xmlsoap.org/soap/http"', $find);
-		$wsdlContent = str_replace($find, $replace, $wsdlContent);
+		if(isset($matches[0])) {
+			$find = $matches[0];
+			$replace = preg_replace('/transport\s*=\s*".*"/', 'transport="http://schemas.xmlsoap.org/soap/http"', $find);
+			$wsdlContent = str_replace($find, $replace, $wsdlContent);
+		}
 
 		return $wsdlContent;
 	}

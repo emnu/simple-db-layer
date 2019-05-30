@@ -19,6 +19,8 @@ class DATABASE_CONFIG {
 }
 
 class CONFIG {
+	static public $dryRun = false;
+
 	static public $debug = true;
 
 	static public $perPage = 500;

@@ -43,6 +43,9 @@ class XlsOutput {
 		if(!class_exists('ZipArchive')) {
 			PHPExcel_Settings::setZipClass(PHPExcel_Settings::PCLZIP);
 		}
+		
+		$cacheMethod = PHPExcel_CachedObjectStorageFactory::cache_in_memory_gzip;
+		PHPExcel_Settings::setCacheStorageMethod($cacheMethod);
 
 		$this->headerStart = $header;
 

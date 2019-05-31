@@ -17,6 +17,9 @@ class XlsInput {
 		if(!class_exists('ZipArchive')) {
 			PHPExcel_Settings::setZipClass(PHPExcel_Settings::PCLZIP);
 		}
+		
+		$cacheMethod = PHPExcel_CachedObjectStorageFactory::cache_in_memory_gzip;
+		PHPExcel_Settings::setCacheStorageMethod($cacheMethod);
 
 		$this->filename = $filename;
 		$this->xlsHandler = PHPExcel_IOFactory::load($filename);

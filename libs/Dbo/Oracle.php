@@ -72,6 +72,10 @@ class Oracle {
 		return $tmp;
 	}
 
+	public function getDateTime(){
+		return date('Y-m-d H:i:s');
+	}
+
 	public function buildInsertSQL($data, $modelVars,  &$bindNames) {
 		$sql = array();
 		$count = 1;
@@ -312,8 +316,11 @@ class Oracle {
 		return $result;
 	}
 
-	public function query($modelVars, $sql) {
+	public function query($modelVars, $sql, $binds = array()) {
 		$result = new OracleResultSet($modelVars);
+		foreach ($binds as $key => $value) {
+			$result->bindArr[':'.$key] = $value;
+		}
 		$result->query = $sql;
 
 		$result->execute($this->_conn);

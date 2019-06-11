@@ -1,7 +1,9 @@
 <?php
 error_reporting(E_ALL);
-if(!(php_sapi_name() == 'cli')) {
-	// die('run on console only'); # enable this to set run only on terminal only
+function consoleOnly() {
+	if(!(php_sapi_name() == 'cli')) {
+		die('run on console only'); # enable this to set run only on terminal only
+	}
 }
 
 define('APP_PATH', dirname(dirname(__FILE__)).DIRECTORY_SEPARATOR);

@@ -69,6 +69,10 @@ class Postgres {
 		return $tmp;
 	}
 
+	public function getDateTime(){
+		return date('Y-m-d H:i:s');
+	}
+
 	public function buildInsertSQL($data, $modelVars,  &$bindNames) {
 		$sql = array();
 		$count = 1;
@@ -297,8 +301,11 @@ class Postgres {
 		return $result;
 	}
 
-	public function query($modelVars, $sql) {
+	public function query($modelVars, $sql, $binds = array()) {
 		$result = new PostgresResultSet($modelVars);
+		foreach ($binds as $key => $value) {
+			$result->bindArr[':'.$key] = $value;
+		}
 		$result->query = $sql;
 
 		$result->execute($this->_conn);

@@ -117,6 +117,10 @@ class Mysql {
 		return $tmp;
 	}
 
+	public function getDateTime(){
+		return date('Y-m-d H:i:s');
+	}
+
 	public function buildUpdateSQL($data, $modelVars) {
 		$sql = array();
 		$sql['types'] = '';
@@ -364,8 +368,14 @@ class Mysql {
 		return $result;
 	}
 
-	public function query($modelVars, $sql) {
+	public function query($modelVars, $sql, $binds = array()) {
 		$result = new MysqlResultSet($modelVars);
+		$types = '';
+		foreach ($binds as $key => $value) {
+			$types .= isset($this->_varType[gettype($value)])?$this->_varType[gettype($value)]:'s';
+			$result->bindArr[] = $value;
+		}
+		$result->bindArr = array_merge(array($types), $result->bindArr);
 		$result->query = $sql;
 
 		$result->query($this->_conn);
@@ -596,6 +606,10 @@ class Mysql {
 		return $tmp;
 	}
 
+	public function getDateTime(){
+		return date('Y-m-d H:i:s');
+	}
+
 	public function buildUpdateSQL($data, $modelVars) {
 		$sql = array();
 		foreach($data as $key => $value) {
@@ -804,7 +818,7 @@ class Mysql {
 		return $result;
 	}
 
-	public function query($modelVars, $sql) {
+	public function query($modelVars, $sql, $binds = array()) {
 		$result = new MysqlResultSet($modelVars);
 		$result->query = $sql;
 

@@ -184,6 +184,12 @@ class Model {
 		}
 
 		$db = ConnectionManager::loadDb($this->connName);
+		if(in_array('created', array_keys($this->columns)) && !isset($data['created'])){
+			$data['created'] = $db->getDateTime();
+		}
+		if(in_array('modified', array_keys($this->columns)) && !isset($data['modified'])){
+			$data['modified'] = $db->getDateTime();
+		}
 		$result = $db->insert(get_object_vars($this), $data);
 
 		if(!$result) {
@@ -207,6 +213,9 @@ class Model {
 		}
 
 		$db = ConnectionManager::loadDb($this->connName);
+		if(in_array('modified', array_keys($this->columns)) && !isset($data['modified'])){
+			$data['modified'] = $db->getDateTime();
+		}
 		$result = $db->update(get_object_vars($this), $data, $conditions, $options);
 
 		if(!$result) {
@@ -245,8 +254,8 @@ class Model {
 		return $result;
 	}
 
-	public function query($sql) {
+	public function query($sql, $binds = array()) {
 		$db = ConnectionManager::loadDb($this->connName);
-		return $db->query(get_object_vars($this), $sql);
+		return $db->query(get_object_vars($this), $sql, $binds);
 	}
 }

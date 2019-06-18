@@ -2,11 +2,20 @@
 
 function ExceptionHandler(Exception $e) {
 
-	$message = sprintf("[%s] %s\n%s",
-		get_class($e),
-		sprintf($e->getMessageTemplate(), $e->getMessage()),
-		$e->getTraceAsString()
-	);
+	if(method_exists($e, 'getMessageTemplate')) {
+		$message = sprintf("[%s] %s\n%s",
+			get_class($e),
+			sprintf($e->getMessageTemplate(), $e->getMessage()),
+			$e->getTraceAsString()
+		);
+	}
+	else {
+		$message = sprintf("[%s] %s\n%s",
+			get_class($e),
+			$e->getMessage(),
+			$e->getTraceAsString()
+		);
+	}
 
 	if(CONFIG::$debug > 0) {
 		echo $message;

@@ -370,7 +370,7 @@ class OracleResultSet {
 			return true;
 		}
 		if(oci_execute($this->statement) == false) {
-			$e = oci_error($conn);
+			$e = oci_error($this->statement);
 			throw new DBErrorException($e['message']);
 		}
 		$this->numRows = oci_num_rows($this->statement);

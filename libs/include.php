@@ -4,6 +4,12 @@ function consoleOnly() {
 	if(!(php_sapi_name() == 'cli')) {
 		die('run on console only'); # enable this to set run only on terminal only
 	}
+	else {
+		if(function_exists('posix_getpwuid')) {
+			$userInfo = posix_getpwuid(posix_getuid());
+			define('EXECUTE_USER', $userInfo['name']);
+		}
+	}
 }
 
 define('APP_PATH', dirname(dirname(__FILE__)).DIRECTORY_SEPARATOR);

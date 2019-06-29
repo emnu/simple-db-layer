@@ -65,4 +65,12 @@ class ModelException extends BaseException {
 		parent::__construct($message, $code);
 	}
 }
+
+class PageNotFoundException extends BaseException {
+	protected $_messageTemplate = 'Page error: %s.';
+
+	public function __construct($message, $code = 404) {
+		parent::__construct($message, $code);
+	}
+}
 set_exception_handler('ExceptionHandler');

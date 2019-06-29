@@ -4,11 +4,15 @@ function consoleOnly() {
 	if(!(php_sapi_name() == 'cli')) {
 		die('run on console only'); # enable this to set run only on terminal only
 	}
+}
+
+if((php_sapi_name() == 'cli')) {
+	if(function_exists('posix_getpwuid')) {
+		$userInfo = posix_getpwuid(posix_getuid());
+		define('EXECUTE_USER', $userInfo['name']);
+	}
 	else {
-		if(function_exists('posix_getpwuid')) {
-			$userInfo = posix_getpwuid(posix_getuid());
-			define('EXECUTE_USER', $userInfo['name']);
-		}
+		define('EXECUTE_USER', exec('whoami'));
 	}
 }
 

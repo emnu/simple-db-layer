@@ -31,4 +31,24 @@ class ConnectionManager {
 		}
 		throw new DBNotFoundException($name);
 	}
+
+	public static function add($name, $conn) {
+		if(is_null(self::$config)) {
+			self::_init();
+		}
+
+		if(!isset(self::$config->{$name})) {
+			self::$config->{$name} = array(
+				'type' => $conn['type'],
+				'username' => $conn['username'],
+				'password' => $conn['password'],
+				'host' => $conn['host'],
+				'database' => $conn['database'],
+			);
+
+			return true;
+		}
+
+		return false;
+	}
 }

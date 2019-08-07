@@ -20,6 +20,10 @@ class Postgres {
 
 	public function connect() {
 		$this->_conn = pg_connect("host=".$this->_config['host']." port=".$this->_config['port']." dbname=".$this->_config['database']." user=".$this->_config['username']." password=".$this->_config['password']);
+
+		if($this->_conn == false) {
+			throw new DBErrorException(pg_last_error($this->_conn));
+		}
 	}
 
 	public function check() {

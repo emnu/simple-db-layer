@@ -20,12 +20,15 @@ class Oracle {
 
 	public function connect() {
 		$this->_conn = oci_connect($this->_config['username'], $this->_config['password'], $this->_config['host'].':'.$this->_config['port'].'/'.$this->_config['database']);
+
+		if($this->_conn == false) {
+			$e = oci_error();
+			throw new DBErrorException($e['message']);
+		}
 	}
 
 	public function check() {
 		if(!$this->_conn) {
-			$e = oci_error();
-			error_log(date('Y-m-d H:i:s') . "oci_error: " . $e['message'] . "\n", 3, APP_PATH."logs".DIRECTORY_SEPARATOR."error.log");
 			$this->connect();
 		}
 	}

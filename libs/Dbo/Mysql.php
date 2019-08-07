@@ -69,6 +69,10 @@ class Mysql {
 
 	public function connect() {
 		$this->_conn = new mysqli($this->_config['host'], $this->_config['username'], $this->_config['password'], $this->_config['database'], $this->_config['port']);
+
+		if($this->_conn->connect_error) {
+			throw new DBErrorException($this->_conn->connect_error);
+		}
 	}
 
 	public function check() {
@@ -425,8 +429,7 @@ class MysqlResultSet {
 		}
 
 		if(!empty($this->bindArr)) {
-			call_user_func_array(array($this->statement, 'bind_param'), $this->refValues($this->bindArr));
-			
+			call_user_func_array(array($this->statement, 'bind_param'), $this->refValues($this->bindArr));			
 		}
 
 		if(CONFIG::$dryRun && preg_match("/((^update[\s]+)|(^insert[\s]+into[\s]+))/i", $this->query)) {
@@ -556,6 +559,11 @@ class Mysql {
 
 	public function connect() {
 		$this->_conn = mysql_connect($this->_config['host'].':'.$this->_config['port'], $this->_config['username'], $this->_config['password']);
+
+		if($this->_conn == false) {
+			throw new DBErrorException(mysql_error());
+		}
+		
 		mysql_select_db($this->_config['database'], $this->_conn);
 	}
 

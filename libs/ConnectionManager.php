@@ -38,13 +38,15 @@ class ConnectionManager {
 		}
 
 		if(!isset(self::$config->{$name})) {
-			self::$config->{$name} = array(
-				'type' => $conn['type'],
-				'username' => $conn['username'],
-				'password' => $conn['password'],
-				'host' => $conn['host'],
-				'database' => $conn['database'],
-			);
+			$configKeys = array('type', 'username', 'password', 'host', 'port', 'database');
+
+			$tmp = array();
+			foreach ($configKeys as $key) {
+				if(isset($conn[$key])) {
+					$tmp[$key] = $conn[$key];
+				}
+			}
+			self::$config->{$name} = $tmp;
 
 			return true;
 		}

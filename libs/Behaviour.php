@@ -12,11 +12,11 @@ class Behaviour {
 		$this->configs = $configs;
 	}
 
-	public function beforeInsert(&$data, $conditions = array()) {
+	public function beforeInsert(&$data) {
 		return true;
 	}
 
-	public function afterInsert(&$data, $conditions = array()) {
+	public function afterInsert(&$data) {
 		return true;
 	}
 

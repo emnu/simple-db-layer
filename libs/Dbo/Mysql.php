@@ -480,7 +480,7 @@ class MysqlResultSet {
 			$this->numRows = $this->statement->num_rows;
 		}
 		else {
-			$this->numRows = $this->statement->affected_rows;
+			$this->numRows = $conn->affected_rows;
 		}
 
 		Log::query($this->query, $this->name, $this->numRows);

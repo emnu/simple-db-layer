@@ -140,7 +140,7 @@ class Model {
 			$tmpModel = ModelObj::buildModel($tmpValue['model']);
 			$tmpValue['table'] = $tmpModel->table;
 
-			if(isset($value['fields'])) {
+			if(is_array($value) && isset($value['fields'])) {
 				$tmpValue['fields'] = $value['fields'];
 			}
 			if(!isset($tmpValue['fields'])) {

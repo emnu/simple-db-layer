@@ -123,6 +123,12 @@ class Postgres {
 							$tmpBindNames[] = $tmpBind;
 							$count++;
 						}
+						if(empty($tmpBindNames)) {
+							$tmpBind = ':bc_'.$count;
+							$bindNames[$tmpBind] = null;
+							$tmpBindNames[] = $tmpBind;
+							$count++;
+						}
 						$condStr[] = $key . ' IN (' . implode(', ', $tmpBindNames) . ')';
 					}
 					elseif(is_null($value)) {
@@ -142,6 +148,12 @@ class Postgres {
 						foreach ($value as $v) {
 							$tmpBind = '$'.$count;
 							$bindNames[$tmpBind] = $v;
+							$tmpBindNames[] = $tmpBind;
+							$count++;
+						}
+						if(empty($tmpBindNames)) {
+							$tmpBind = ':bc_'.$count;
+							$bindNames[$tmpBind] = null;
 							$tmpBindNames[] = $tmpBind;
 							$count++;
 						}

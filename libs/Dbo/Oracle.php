@@ -29,6 +29,8 @@ class Oracle {
 
 	public function check() {
 		if(!$this->_conn) {
+			$e = oci_error();
+			error_log(date('Y-m-d H:i:s') . "oci_error: " . $e['message'] . "\n", 3, APP_PATH."logs".DIRECTORY_SEPARATOR."error.log");
 			$this->connect();
 		}
 	}
@@ -139,6 +141,12 @@ class Oracle {
 							$tmpBindNames[] = $tmpBind;
 							$count++;
 						}
+						if(empty($tmpBindNames)) {
+							$tmpBind = ':bc_'.$count;
+							$bindNames[$tmpBind] = null;
+							$tmpBindNames[] = $tmpBind;
+							$count++;
+						}
 						$condStr[] = $key . ' IN (' . implode(', ', $tmpBindNames) . ')';
 					}
 					elseif(is_null($value)) {
@@ -157,6 +165,12 @@ class Oracle {
 						foreach ($value as $v) {
 							$tmpBind = ':bc_'.$count;
 							$bindNames[$tmpBind] = $v;
+							$tmpBindNames[] = $tmpBind;
+							$count++;
+						}
+						if(empty($tmpBindNames)) {
+							$tmpBind = ':bc_'.$count;
+							$bindNames[$tmpBind] = null;
 							$tmpBindNames[] = $tmpBind;
 							$count++;
 						}

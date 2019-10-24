@@ -168,6 +168,11 @@ class Mysql {
 							$sql['types'] .= isset($this->_varType[gettype($v)])?$this->_varType[gettype($v)]:'s';
 							$tmpqmarks[] = '?';
 						}
+						if(empty($tmpqmarks)) {
+							$sql['values'][] = null;
+							$sql['types'] .= 'i';
+							$tmpqmarks[] = '?';
+						}
 						$condStr[] = $key . ' IN (' . implode(', ', $tmpqmarks) . ')';
 					}
 					elseif(is_null($value)) {
@@ -185,6 +190,11 @@ class Mysql {
 						foreach ($value as $v) {
 							$sql['values'][] = $v;
 							$sql['types'] .= isset($this->_varType[gettype($v)])?$this->_varType[gettype($v)]:'s';
+							$tmpqmarks[] = '?';
+						}
+						if(empty($tmpqmarks)) {
+							$sql['values'][] = null;
+							$sql['types'] .= 'i';
 							$tmpqmarks[] = '?';
 						}
 						$condStr[] = $key . ' IN (' . implode(', ', $tmpqmarks) . ')';
@@ -480,7 +490,7 @@ class MysqlResultSet {
 			$this->numRows = $this->statement->num_rows;
 		}
 		else {
-			$this->numRows = $conn->affected_rows;
+			$this->numRows = $this->statement->affected_rows;
 		}
 
 		Log::query($this->query, $this->name, $this->numRows);
@@ -563,7 +573,7 @@ class Mysql {
 		if($this->_conn == false) {
 			throw new DBErrorException(mysql_error());
 		}
-		
+
 		mysql_select_db($this->_config['database'], $this->_conn);
 	}
 
@@ -650,9 +660,12 @@ class Mysql {
 				}
 				elseif(!preg_match("/(\b(is|not|like|null)\b|[<>=!]+)/i", trim($key))) {
 					if(is_array($value)) {
-						$tmpqmarks = array();
+						$tmpvals = array();
 						foreach ($value as $v) {
 							$tmpvals[] = (gettype($v) == 'string')?"'".mysql_real_escape_string($v)."'":$v;
+						}
+						if(empty($tmpvals)) {
+							$tmpvals[] = 'NULL';
 						}
 						$condStr[] = $key . ' IN (' . implode(', ', $tmpvals) . ')';
 					}
@@ -666,9 +679,12 @@ class Mysql {
 				}
 				else {
 					if(is_array($value)) {
-						$tmpqmarks = array();
+						$tmpvals = array();
 						foreach ($value as $v) {
 							$tmpvals[] = (gettype($v) == 'string')?"'".mysql_real_escape_string($v)."'":$v;
+						}
+						if(empty($tmpvals)) {
+							$tmpvals[] = 'NULL';
 						}
 						$condStr[] = $key . ' IN (' . implode(', ', $tmpvals) . ')';
 					}
